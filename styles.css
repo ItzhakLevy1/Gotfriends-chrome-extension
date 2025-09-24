@@ -1,0 +1,21 @@
+.applied-job {
+    /* Styles for a job that has been applied for */
+    border: 2px solid #4CAF50 !important; /* A noticeable green border */
+    background-color: #00fa08; /* A light green background */
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5); /* A subtle green glow */
+    transition: all 0.3s ease-in-out;
+}
+
+.applied-job .job-title {
+    color: #388e3c; /* Darker green for the title */
+}
+
+/* Optional: Add a checkmark icon */
+.applied-job::after {
+    content: "✅ Already applied";
+    position: absolute;
+    top: 80px;
+    right: 80px;
+    font-size: 80px;
+    transform: rotate(10deg);
+}
