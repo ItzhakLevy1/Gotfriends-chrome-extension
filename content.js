@@ -39,10 +39,10 @@
 
         if (backButton) {
             console.log("Back button found. Automatically navigating back.");
-            // Set a flag to tell the next page that it needs to reload.
-            localStorage.setItem('shouldReload', 'true');
             // Navigate back to the jobs page.
             window.history.back();
+            // Set a flag to tell the next page that it needs to reload.
+            localStorage.setItem('shouldReload', 'true');
         }
     };
     
