@@ -6,7 +6,48 @@
 
   // The message's text
   const textSpan = document.createElement("span");
-  textSpan.textContent = "🟢 התוסף שלי לסינון המשרות פעיל";
+
+  // The message's text
+  const messageHTML = `
+    <div>
+      🟢 התוסף שלי לסינון המשרות פעיל.
+      <hr>
+      בתפריט משמאל:
+      <br><br>
+      <br><br>
+       1️⃣ בחר 'תחום' וסמן:
+       <br><br>
+       'דרושים פיתוח תוכנה'
+       <hr>
+      2️⃣ בחר 'מקצוע' וסמן: 
+      <br><br>
+      'Frontend Developer'
+       <br>
+       +
+       <br>
+       'Fullstack Developer'
+       <br>
+       +
+       <br>
+       ' מפתח React '
+       <hr>
+       3️⃣ בחר 'אזור' וסמן:
+       <br><br>
+        'ת"א והמרכז'
+       <br>
+        +
+       <br>
+        'השרון'
+        <br>
+        +
+       <br>
+        'שפלה'
+        <hr>
+       ✅ בסיום הקלק על 'חיפוש'
+    </div>
+  `;
+
+  textSpan.innerHTML = messageHTML;
 
   // Closing button
   const closeBtn = document.createElement("button");
