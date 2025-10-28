@@ -25,3 +25,35 @@
   /* display: inline-block; 
   max-width: min-content; */
 }
+
+/******************** The extention message that indicates that the extension in working ********************/
+.my-extension-banner {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 128, 0, 0.85);
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  z-index: 999999;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.my-extension-close {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s;
+}
+
+.my-extension-close:hover {
+  transform: scale(1.3);
+}
