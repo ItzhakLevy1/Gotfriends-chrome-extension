@@ -26,7 +26,7 @@
             while ((match = experienceRegex.exec(jobText)) !== null) {
                 const experienceYears = parseInt(match[1], 10);
                 if (!isNaN(experienceYears)) {
-                    if (experienceYears >= 5) {
+                    if (experienceYears >= 4) { // Only display jobs that require 3 years or less of experience
                         hideJob = true;
                         break;
                     }
