@@ -4,16 +4,14 @@
   const messageDiv = document.createElement("div");
   messageDiv.className = "my-extension-banner";
 
-  // The message's text
+  // The message's text container
   const textSpan = document.createElement("span");
 
-  // The message's text
   const messageHTML = `
     <div>
       🟢 התוסף שלי לסינון המשרות פעיל.
       <hr>
       בתפריט משמאל:
-      <br><br>
       <br><br>
        1️⃣ בחר 'תחום' וסמן:
        <br><br>
@@ -49,29 +47,27 @@
 
   textSpan.innerHTML = messageHTML;
 
-  // Closing button
+  // Close button
   const closeBtn = document.createElement("button");
   closeBtn.textContent = "×";
   closeBtn.className = "my-extension-close";
 
-  // Add a closing event
   closeBtn.addEventListener("click", () => {
     messageDiv.remove();
   });
 
-  // Add the elements to the message
   messageDiv.appendChild(textSpan);
   messageDiv.appendChild(closeBtn);
 
-  // Add the message to the page
   document.body.appendChild(messageDiv);
 })();
 
 (function () {
-  // Filter jobs by experience and mark submitted jobs
+  // Filter jobs by experience and mark applied jobs from localStorage
   const filterAndMarkJobs = () => {
-    const jobs = document.querySelectorAll(".inner");
+    const jobs = document.querySelectorAll(".item");
     let countHidden = 0;
+
     const appliedJobIds = JSON.parse(
       localStorage.getItem("appliedJobIds") || "[]"
     );
@@ -82,29 +78,29 @@
       let match;
       let hideJob = false;
 
-      // Check if this job has already been applied for by its ID
+      // Mark job as applied if its ID exists in localStorage
       const jobIdElement = job.querySelector(".career_num");
       if (jobIdElement) {
-        const jobId = jobIdElement.innerText.match(/(\d+)/)[1];
-        if (appliedJobIds.includes(jobId)) {
-          job.classList.add("applied-job");
-        } else {
-          job.classList.remove("applied-job");
-        }
-      }
-
-      // The rest of the filtering logic remains the same - Filter by experience
-      while ((match = experienceRegex.exec(jobText)) !== null) {
-        const experienceYears = parseInt(match[1], 10);
-        if (!isNaN(experienceYears)) {
-          if (experienceYears >= 4) {
-            // Only display jobs that require 3 years or less of experience
-            hideJob = true;
-            break;
+        const idMatch = jobIdElement.innerText.match(/(\d+)/);
+        if (idMatch) {
+          const jobId = idMatch[1];
+          if (appliedJobIds.includes(jobId)) {
+            job.classList.add("applied-job");
+          } else {
+            job.classList.remove("applied-job");
           }
         }
       }
-      // Hiding jobs that exceed the range of years of experience
+
+      // Filter by experience (hide jobs that require 4+ years)
+      while ((match = experienceRegex.exec(jobText)) !== null) {
+        const experienceYears = parseInt(match[1], 10);
+        if (!isNaN(experienceYears) && experienceYears >= 4) {
+          hideJob = true;
+          break;
+        }
+      }
+
       if (hideJob) {
         job.style.display = "none";
         countHidden++;
@@ -114,86 +110,80 @@
     });
 
     console.log(
-      `Filtering complete: ${countHidden} jobs with 5+ years of experience were hidden.`
+      `Filtering complete: ${countHidden} jobs with 4+ years of experience were hidden.`
     );
   };
 
-  // This function adds a click listener to the "send CV" button on the main jobs list - to track applied jobs
-  const addApplyButtonListeners = () => {
-    const applyButtons = document.querySelectorAll(".item .bottom .button");
+  // Event delegation: handle clicks on "Send CV" buttons and mark jobs immediately
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("button.popupHpOpen.button");
+    if (!button) return;
 
-    applyButtons.forEach((button) => {
-      button.addEventListener("click", (event) => {
-        const jobContainer = event.target.closest(".item");
-        if (jobContainer) {
-          const jobIdElement = jobContainer.querySelector(".career_num");
-          if (jobIdElement) {
-            const jobId = jobIdElement.innerText.match(/(\d+)/)[1];
-            let appliedJobIds = JSON.parse(
-              localStorage.getItem("appliedJobIds") || "[]"
-            );
-            if (!appliedJobIds.includes(jobId)) {
-              appliedJobIds.push(jobId);
-              localStorage.setItem(
-                "appliedJobIds",
-                JSON.stringify(appliedJobIds)
-              );
-              console.log(
-                `Job ID ${jobId} saved to local storage on button click.`
-              );
-            }
-          }
-        }
-      });
-    });
-  };
+    const jobContainer = button.closest(".item");
+    if (!jobContainer) return;
 
-  // Handle the automatic navigation - from the "Thank you for sending your resume" page back to the previouse page.
+    const jobIdElement = jobContainer.querySelector(".career_num");
+    if (!jobIdElement) return;
+
+    const match = jobIdElement.innerText.match(/(\d+)/);
+    if (!match) return;
+
+    const jobId = match[1];
+
+    let appliedJobIds = JSON.parse(
+      localStorage.getItem("appliedJobIds") || "[]"
+    );
+
+    if (!appliedJobIds.includes(jobId)) {
+      appliedJobIds.push(jobId);
+      localStorage.setItem("appliedJobIds", JSON.stringify(appliedJobIds));
+      console.log(`Job ID ${jobId} saved to local storage.`);
+    }
+
+    // Mark visually immediately
+    jobContainer.classList.add("applied-job");
+  });
+
+  // Handle automatic navigation from "thank you" page back to jobs list (if exists)
   const handleAutomaticNavigation = () => {
-    // Look for the specific back button on the "thank you" page
     const backButton = document.querySelector('a.button[href*="/jobs/"]');
 
     if (backButton) {
       console.log("Back button found. Automatically navigating back.");
-      // Set a flag to tell the next page that it needs to reload.
       localStorage.setItem("shouldReload", "true");
-      // Navigate back to the jobs page.
       window.history.back();
     }
   };
 
-  // The main function to run on every page load and URL change.
+  // Main function
   const main = () => {
-    // Handle navigation first.
     handleAutomaticNavigation();
 
-    // Check if we need to reload the page based on the flag set earlier.
     if (window.location.href.includes("/jobs/")) {
       if (localStorage.getItem("shouldReload") === "true") {
         localStorage.removeItem("shouldReload");
-        console.log(
-          "Navigated back to jobs page, reloading to apply the filter."
-        );
+        console.log("Navigated back to jobs page, reloading to apply the filter.");
         window.location.reload();
       } else {
-        // If the URL is the jobs page and no reload is needed, apply the filter and add listeners.
-        setTimeout(filterAndMarkJobs, 500);
-        addApplyButtonListeners();
+        // Try once in case jobs already exist
+        filterAndMarkJobs();
       }
     }
   };
 
-  // Use a MutationObserver to listen for URL changes and re-run the main logic.
-  let lastUrl = window.location.href;
-  const observer = new MutationObserver(() => {
-    if (window.location.href !== lastUrl) {
-      lastUrl = window.location.href;
-      main();
+  // Observe DOM changes to handle dynamically loaded job items
+  const jobsObserver = new MutationObserver(() => {
+    const jobs = document.querySelectorAll(".item");
+    if (jobs.length > 0) {
+      filterAndMarkJobs();
     }
   });
 
-  observer.observe(document, { subtree: true, childList: true });
+  jobsObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 
-  // Run the main function on the initial page load.
+  // Initial run
   main();
 })();

@@ -13,7 +13,7 @@
 
 /* Optional: Add a checkmark icon */
 .applied-job::after {
-  color: #ffffff;
+  color: #00ff11;
   content: "✅ Applied";
   position: absolute;
   top: 2em;
