@@ -1,189 +1,132 @@
-/* Add an informative message to indicate that the extension for this site is on */
-(function () {
-  // Create a new message element
-  const messageDiv = document.createElement("div");
-  messageDiv.className = "my-extension-banner";
-
-  // The message's text container
-  const textSpan = document.createElement("span");
-
-  const messageHTML = `
-    <div>
-      🟢 התוסף שלי לסינון המשרות פעיל.
-      <hr>
-      בתפריט משמאל:
-      <br><br>
-       1️⃣ בחר 'תחום' וסמן:
-       <br><br>
-       'דרושים פיתוח תוכנה'
-       <hr>
-      2️⃣ בחר 'מקצוע' וסמן: 
-      <br><br>
-      'Frontend Developer'
-       <br>
-       +
-       <br>
-       'Fullstack Developer'
-       <br>
-       +
-       <br>
-       ' מפתח React '
-       <hr>
-       3️⃣ בחר 'אזור' וסמן:
-       <br><br>
-        'ת"א והמרכז'
-       <br>
-        +
-       <br>
-        'השרון'
-        <br>
-        +
-       <br>
-        'שפלה'
-        <hr>
-       ✅ בסיום הקלק על 'חיפוש'
-    </div>
-  `;
-
-  textSpan.innerHTML = messageHTML;
-
-  // Close button
-  const closeBtn = document.createElement("button");
-  closeBtn.textContent = "×";
-  closeBtn.className = "my-extension-close";
-
-  closeBtn.addEventListener("click", () => {
-    messageDiv.remove();
-  });
-
-  messageDiv.appendChild(textSpan);
-  messageDiv.appendChild(closeBtn);
-
-  document.body.appendChild(messageDiv);
-})();
+/**
+ * Extension for Elbit Career Website
+ * Logic: Use incremental scrolling to "wake up" the site and click 'Load More'.
+ */
 
 (function () {
-  // Filter jobs by experience and mark applied jobs from localStorage
-  const filterAndMarkJobs = () => {
-    const jobs = document.querySelectorAll(".item");
-    let countHidden = 0;
+  // -----------------------------
+  // UI Banner
+  // -----------------------------
+  const showBanner = (text) => {
+    let banner = document.querySelector(".elbit-extension-banner");
+    if (!banner) {
+      banner = document.createElement("div");
+      banner.className = "elbit-extension-banner";
+      document.body.appendChild(banner);
+    }
+    banner.textContent = text;
+  };
 
-    const appliedJobIds = JSON.parse(
-      localStorage.getItem("appliedJobIds") || "[]"
-    );
+  showBanner("🟢 תוסף אלביט פעיל: טעינה אוטומטית של כל המשרות על ידי הקלקה חוזרת על כפתור 'תוצאות חיפוש נוספות'.");
 
-    jobs.forEach((job) => {
-      const jobText = job.innerText.toLowerCase();
-      const experienceRegex = /(\d+)\s*(שנות|שנה)\s*ניסיון/g;
-      let match;
-      let hideJob = false;
+  // -----------------------------
+  // 1. Human-like Incremental Scroll
+  // -----------------------------
+  const smoothScrollToBottom = (callback) => {
+    const scrollStep = 400; // Pixels per jump
+    const scrollDelay = 50; // Milliseconds between jumps
 
-      // Mark job as applied if its ID exists in localStorage
-      const jobIdElement = job.querySelector(".career_num");
-      if (jobIdElement) {
-        const idMatch = jobIdElement.innerText.match(/(\d+)/);
-        if (idMatch) {
-          const jobId = idMatch[1];
-          if (appliedJobIds.includes(jobId)) {
-            job.classList.add("applied-job");
-          } else {
-            job.classList.remove("applied-job");
-          }
-        }
-      }
+    const scrollInterval = setInterval(() => {
+      const currentScroll = window.scrollY + window.innerHeight;
+      const maxScroll = document.documentElement.scrollHeight;
 
-      // Filter by experience (hide jobs that require 4+ years)
-      while ((match = experienceRegex.exec(jobText)) !== null) {
-        const experienceYears = parseInt(match[1], 10);
-        if (!isNaN(experienceYears) && experienceYears >= 4) {
-          hideJob = true;
-          break;
-        }
-      }
+      // Stop if we are near the bottom or found the button
+      const loadMoreBtn = Array.from(document.querySelectorAll('button.MuiButton-root'))
+        .find(btn => btn.textContent.includes("תוצאות חיפוש נוספות"));
 
-      if (hideJob) {
-        job.style.display = "none";
-        countHidden++;
+      if (currentScroll >= maxScroll - 100 || loadMoreBtn) {
+        clearInterval(scrollInterval);
+        if (callback) callback(loadMoreBtn);
       } else {
-        job.style.display = "";
+        window.scrollBy(0, scrollStep);
+      }
+    }, scrollDelay);
+  };
+
+  // -----------------------------
+  // 2. Recursive Expand Logic
+  // -----------------------------
+  const expandAll = () => {
+    smoothScrollToBottom((btn) => {
+      if (btn) {
+        console.log("LOG: Button found. Triggering click chain.");
+        
+        // Ensure the button is centered before clicking
+        btn.scrollIntoView({ block: "center" });
+
+        // Dispatch comprehensive event chain for Material UI
+        const events = ['mouseenter', 'mouseover', 'mousedown', 'mouseup', 'click'];
+        events.forEach(type => {
+          btn.dispatchEvent(new MouseEvent(type, { 
+            bubbles: true, 
+            cancelable: true, 
+            view: window,
+            buttons: 1 
+          }));
+        });
+
+        // Wait for next batch and repeat
+        setTimeout(expandAll, 1500);
+      } else {
+        const loader = document.querySelector('.MuiCircularProgress-root');
+        if (loader) {
+          console.log("LOG: Site is loading, retrying in 2s...");
+          setTimeout(expandAll, 2000);
+        } else {
+          console.log("LOG: Finish. No more buttons found.");
+          showBanner("✅ All jobs loaded and filtered.");
+          processJobs();
+        }
       }
     });
-
-    console.log(
-      `Filtering complete: ${countHidden} jobs with 4+ years of experience were hidden.`
-    );
   };
 
-  // Event delegation: handle clicks on "Send CV" buttons and mark jobs immediately
-  document.addEventListener("click", (event) => {
-    const button = event.target.closest("button.popupHpOpen.button");
-    if (!button) return;
+  // -----------------------------
+  // 3. Filter & Mark Jobs
+  // -----------------------------
+  const processJobs = () => {
+    const jobs = document.querySelectorAll(".MuiCard-root");
+    const highExpRegex = /שנתיים|שלוש|ארבע|חמש|שש|שבע|שמונה|תשע|עשר|מנוסה|Senior|Lead|Principal/i;
+    const juniorFriendlyRegex = /ג'וניור|Junior|ללא ניסיון|0-1|שנה ניסיון|סטודנט/i;
 
-    const jobContainer = button.closest(".item");
-    if (!jobContainer) return;
+    jobs.forEach((job) => {
+      if (job.dataset.processed === "true") return;
 
-    const jobIdElement = jobContainer.querySelector(".career_num");
-    if (!jobIdElement) return;
+      const text = job.innerText;
+      let shouldHide = false;
 
-    const match = jobIdElement.innerText.match(/(\d+)/);
-    if (!match) return;
+      const hasDegree = /תואר|degree/i.test(text);
+      const isJunior = juniorFriendlyRegex.test(text);
 
-    const jobId = match[1];
-
-    let appliedJobIds = JSON.parse(
-      localStorage.getItem("appliedJobIds") || "[]"
-    );
-
-    if (!appliedJobIds.includes(jobId)) {
-      appliedJobIds.push(jobId);
-      localStorage.setItem("appliedJobIds", JSON.stringify(appliedJobIds));
-      console.log(`Job ID ${jobId} saved to local storage.`);
-    }
-
-    // Mark visually immediately
-    jobContainer.classList.add("applied-job");
-  });
-
-  // Handle automatic navigation from "thank you" page back to jobs list (if exists)
-  const handleAutomaticNavigation = () => {
-    const backButton = document.querySelector('a.button[href*="/jobs/"]');
-
-    if (backButton) {
-      console.log("Back button found. Automatically navigating back.");
-      localStorage.setItem("shouldReload", "true");
-      window.history.back();
-    }
-  };
-
-  // Main function
-  const main = () => {
-    handleAutomaticNavigation();
-
-    if (window.location.href.includes("/jobs/")) {
-      if (localStorage.getItem("shouldReload") === "true") {
-        localStorage.removeItem("shouldReload");
-        console.log("Navigated back to jobs page, reloading to apply the filter.");
-        window.location.reload();
-      } else {
-        // Try once in case jobs already exist
-        filterAndMarkJobs();
+      if (!isJunior) {
+        if (highExpRegex.test(text)) shouldHide = true;
+        const numMatch = text.match(/(\d+)\s*(?:\+|שנים|years|שנות)/i);
+        if (numMatch && parseInt(numMatch[1], 10) > 1) shouldHide = true;
       }
-    }
+
+      if (shouldHide || (hasDegree && !isJunior)) {
+        job.classList.add("job-filtered");
+      }
+
+      const appliedText = ["הגשת מועמדות", "בוצעה", "הוגשה", "כבר הגשת"];
+      if (appliedText.some(t => text.includes(t))) {
+        job.classList.add("job-applied");
+      }
+
+      job.dataset.processed = "true";
+    });
   };
 
-  // Observe DOM changes to handle dynamically loaded job items
-  const jobsObserver = new MutationObserver(() => {
-    const jobs = document.querySelectorAll(".item");
-    if (jobs.length > 0) {
-      filterAndMarkJobs();
+  // Start the process when the first button appears after initial loader
+  const checkInitialLoad = setInterval(() => {
+    const initialBtn = Array.from(document.querySelectorAll('button.MuiButton-root'))
+      .find(btn => btn.textContent.includes("תוצאות חיפוש נוספות"));
+    
+    if (initialBtn) {
+      clearInterval(checkInitialLoad);
+      console.log("LOG: Initial batch loaded. Starting auto-scroll.");
+      expandAll();
     }
-  });
+  }, 2000);
 
-  jobsObserver.observe(document.body, {
-    childList: true,
-    subtree: true,
-  });
-
-  // Initial run
-  main();
 })();
