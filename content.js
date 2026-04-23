@@ -174,9 +174,7 @@
         // Initial execution delay to ensure items are rendered
         setTimeout(filterAndMarkJobs, 500);
       }
-
-      job.dataset.processed = "true";
-    });
+    }
   };
 
   // Monitor DOM for dynamic content changes (Infinite scroll/Filter updates)
