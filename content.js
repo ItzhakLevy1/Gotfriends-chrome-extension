@@ -1,3 +1,67 @@
+/* Add an informative message to indicate that the extension for this site is on */
+(function () {
+  // Create a new message element
+  const messageDiv = document.createElement("div");
+  messageDiv.className = "my-extension-banner";
+
+  // The message's text container
+  const textSpan = document.createElement("span");
+
+  const messageHTML = `
+    <div>
+      🟢 התוסף שלי לסינון המשרות פעיל.
+      <hr>
+      בתפריט משמאל:
+      <br><br>
+       1️⃣ בחר 'תחום' וסמן:
+       <br><br>
+       'דרושים פיתוח תוכנה'
+       <hr>
+      2️⃣ בחר 'מקצוע' וסמן: 
+      <br><br>
+      'Frontend Developer'
+       <br>
+       +
+       <br>
+       'Fullstack Developer'
+       <br>
+       +
+       <br>
+       ' מפתח React '
+       <hr>
+       3️⃣ בחר 'אזור' וסמן:
+       <br><br>
+        'ת"א והמרכז'
+       <br>
+        +
+       <br>
+        'השרון'
+        <br>
+        +
+       <br>
+        'שפלה'
+        <hr>
+       ✅ בסיום הקלק על 'חיפוש'
+    </div>
+  `;
+
+  textSpan.innerHTML = messageHTML;
+
+  // Close button
+  const closeBtn = document.createElement("button");
+  closeBtn.textContent = "×";
+  closeBtn.className = "my-extension-close";
+
+  closeBtn.addEventListener("click", () => {
+    messageDiv.remove();
+  });
+
+  messageDiv.appendChild(textSpan);
+  messageDiv.appendChild(closeBtn);
+
+  document.body.appendChild(messageDiv);
+})();
+
 (function () {
   // 1. Helper to get clean numeric ID
   const getJobId = (container) => {
