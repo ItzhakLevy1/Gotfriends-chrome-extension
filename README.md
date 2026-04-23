@@ -1,35 +1,44 @@
-# Elbit Careers Auto-Scanner & Filter
+# Job Application Optimizer - Chrome Extension
+A productivity-focused Chrome Extension designed to streamline the job searching process on recruitment portals. This tool automates the filtering of irrelevant positions and provides visual tracking for submitted applications.
 
-A specialized Chrome Extension designed to automate the job search process on the Elbit Systems careers portal. It eliminates the need for manual scrolling and helps identify relevant junior-level positions.
+# Features
+Smart Experience Filtering: Automatically hides job postings that require high seniority (4+ years of experience) based on real-time text analysis.
 
-## Features
+Application Tracking: Visually marks jobs you've already applied for with a distinct green highlight and a "Submitted" badge.
 
-### 1. Auto-Expanding Batch Loader
-The Elbit career site loads jobs in small batches. This extension:
-* **Simulated Human Scrolling**: Performs incremental "jumps" to trigger the site's internal observers.
-* **Recursive Interaction**: Automatically detects and force-clicks the "Load More" (תוצאות חיפוש נוספות) button until the entire job catalog is visible.
-* **Wait Handling**: Manages the initial 5-10 second loading state of the portal before starting the scan.
+Persistence: Uses localStorage to remember your applied jobs across sessions.
 
-### 2. Smart Junior Filtering
-Focuses your attention on relevant roles by visually de-emphasizing senior positions:
-* **Experience Filtering**: Fades out listings requiring 2+ years of experience or senior-level keywords (e.g., Senior, Lead, Principal).
-* **Degree Logic**: Flags degree requirements unless the job is explicitly marked as "Junior" or "Student" friendly.
-* **Visual Hierarchy**: Non-relevant jobs are set to low opacity and grayscale to keep the UI clean without breaking the React DOM.
+Automatic Navigation: Detects "Thank You" pages after submission and automatically navigates back to the job list to save time.
 
-### 3. Application Tracking
-* **Redundancy Check**: Highlights jobs you have already applied to with a green border and background, preventing double submissions.
+Dynamic Content Support: Utilizes MutationObserver to handle infinite scrolling and dynamically loaded job postings.
 
-## How to Install
+On-Page Instructions: Displays a helpful guide (banner) to help users set the correct search filters on the website.
 
-1. **Download the files**: Ensure you have `manifest.json`, `content.js`, and `styles.css` in one folder.
-2. **Open Chrome Extensions**: Navigate to `chrome://extensions`.
-3. **Enable Developer Mode**: Toggle the switch in the top right corner.
-4. **Load Unpacked**: Click "Load unpacked" and select the extension folder.
+# Technology Stack
+JavaScript (ES6+): Core logic, DOM manipulation, and Event Delegation.
 
-## Technical Details
+CSS3: Custom UI components and visual states.
 
-The extension utilizes a **Recursive Polling & Scroll** mechanism. Unlike standard observers, it simulates real user movement to bypass UI constraints of Material-UI components. It specifically targets `MuiCard-root` elements for processing and `MuiButton-root` for navigation.
+Chrome Extension API: Manifest V3 integration.
 
-## Usage
+RegEx: Advanced pattern matching for Hebrew text and job ID extraction.
 
-Simply open the Elbit Systems careers page. The extension will display a blue banner indicating it is active. Sit back while it scrolls and loads all available positions for you.
+# Installation
+Clone this repository or download the source code.
+
+Open Chrome and navigate to chrome://extensions/.
+
+Enable "Developer mode" (top right corner).
+
+Click "Load unpacked" and select the extension folder.
+
+# Project Structure
+content.js: Contains the logic for job filtering, ID extraction, and application tracking.
+
+style.css: Defines the visual styles for the extension banner and the "Applied" job state.
+
+manifest.json: Configuration file for the Chrome Extension.
+
+# How It Works
+The extension assigns a unique ID to each job by extracting it from the career_num field or data attributes. When the "Send CV" button is clicked, this ID is stored in the browser's local storage. Upon page load or scroll, the script cross-references the visible jobs with the stored IDs and updates the UI accordingly.
+
